@@ -49,7 +49,32 @@ public class Client extends JFrame {
         setVisible(true);
     }
 
-    private void getFile(String s) {
+    private void getFile(String filename) {
+        try {
+            out.writeUTF("download");
+            out.writeUTF(filename);
+            if ("found".equals(in.readUTF())) {
+                File file = new File("client"  + File.separator + filename);
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+                long size = in.readLong();
+                FileOutputStream fos = new FileOutputStream(file);
+                byte[] buffer = new byte[8 * 1024];
+
+                for (int i = 0; i < (size + (buffer.length - 1)) / (buffer.length); i++) {
+                    int read = in.read(buffer);
+                    fos.write(buffer, 0, read);
+                }
+                fos.close();
+                System.out.printf("File %s is download\n", filename);
+            } else {
+                System.out.printf("File %s not found on server\n", filename);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
     }
 

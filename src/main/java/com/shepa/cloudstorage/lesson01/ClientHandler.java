@@ -1,9 +1,6 @@
 package com.shepa.cloudstorage.lesson01;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.net.Socket;
 
 public class ClientHandler implements Runnable {
@@ -47,7 +44,25 @@ public class ClientHandler implements Runnable {
                 }
 
                 if ("download".equals(command)) {
-                    // TODO: 14.06.2021
+                    File file = new File("server" + File.separator + in.readUTF());
+                    if (file.exists()) {
+                        out.writeUTF("found");
+
+                        long fileLength = file.length();
+                        out.writeLong(fileLength);
+
+                        int read = 0;
+                        FileInputStream fis = new FileInputStream(file);
+                        byte[] buffer = new byte[8 * 1024];
+                        while ((read = fis.read(buffer)) != -1) {
+                            out.write(buffer, 0, read);
+                        }
+
+                        out.flush();
+
+                    } else {
+                        out.writeUTF("not found");
+                    }
                 }
                 if ("exit".equals(command)) {
                     System.out.printf("Client %s disconnected correctly\n", socket.getInetAddress());
@@ -55,7 +70,8 @@ public class ClientHandler implements Runnable {
                 }
 
                 System.out.println(command);
-                out.writeUTF(command);
+                // Некорректный вывод статуса срабатывал из-за строки следующей строки
+                //out.writeUTF(command);
             }
         } catch (Exception e) {
             e.printStackTrace();
